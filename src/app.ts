@@ -2,11 +2,60 @@
 import express from 'express'
 import { config } from "dotenv";
 import connectToDatabase from './config/databaseConnection';
+import UserModel from './library/userModel';
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 config()
 const app = express();
 connectToDatabase();
 const Port = process.env.PORT || 3000;
 app.use(express.json());
+
+//register
+app.post('/register', async (req, res) => {
+  const { firstName, lastName, email, password } = req.body;
+  if (!firstName || !lastName || !email || !password) {
+    return res.status(400).json({ success: false, message: 'First name, last name, email, and password are required.' });
+  }
+  try {
+    const existingUser = await UserModel.findOne({ email });
+    if (existingUser) {
+      return res.status(409).json({ success: false, message: 'User already exists.' });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new UserModel({ firstName, lastName, email, password: hashedPassword });
+    await user.save();
+    return res.status(201).json({ success: true, message: 'User registered successfully.' });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
+
+//login
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return res.status(400).json({ success: false, message: 'Email and password are required.' });
+  }
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+    }
+    const payload = {
+      userId: user._id, 
+      email: user.email
+    }
+    const token = jwt.sign( payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
+    return res.json({ success: true, message: 'Login successful.', token });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: 'Server error', error });
+  }
+});
 
 app.listen(Port,()=>{
     console.log(`Server is running on port ${Port}`)

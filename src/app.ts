@@ -44,16 +44,31 @@ app.post('/login', async (req, res) => {
     }
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(401).json({ success: false, message: 'Invalid credentials.' });
+      return res.status(401).json({ success: false, message: 'Password is Incorrect.' });
     }
     const payload = {
       userId: user._id, 
       email: user.email
     }
     const token = jwt.sign( payload, process.env.JWT_SECRET || 'secret', { expiresIn: '24h' });
-    return res.json({ success: true, message: 'Login successful.', token });
+    const options = {
+      expires: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
+      httpOnly: true, 
+    };
+    // return res.json({ success: true, message: 'Login successful.', token });
+    return res.cookie('token', token, options).status(200).json({
+      success: true,
+      token,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email
+      },
+      message: 'Logged in successfully.'
+    })
   } catch (error) {
-    return res.status(500).json({ success: false, message: 'Server error', error });
+    return res.status(500).json({ message: 'Server error', error });
   }
 });
 

@@ -5,11 +5,18 @@ import connectToDatabase from './config/databaseConnection';
 import UserModel from './library/userModel';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import bodyParser from 'body-parser';
 config()
 const app = express();
 connectToDatabase();
 const Port = process.env.PORT || 3000;
 app.use(express.json());
+app.use(bodyParser.json());
+
+import busRoutes from './routes/bus-routes';
+import busStopRoutes from './routes/bus-stops';
+app.use('/api/v1', busRoutes);
+app.use('/api/v1/bus-stop', busStopRoutes);
 
 //register
 app.post('/register', async (req, res) => {

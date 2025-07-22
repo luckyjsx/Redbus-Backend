@@ -12,8 +12,10 @@ app.use(bodyParser.json());
 
 import busRoutes from './routes/bus-routes';
 import busStopRoutes from './routes/bus-stops';
+import searchBusRoute from './routes/bus'
 app.use('/api/v1', busRoutes);
 app.use('/api/v1/bus-stop', busStopRoutes);
+app.use('/api/v1/buses', searchBusRoute);
 
 app.listen(Port,()=>{
     console.log(`Server is running on port ${Port}`)

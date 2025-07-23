@@ -8,7 +8,9 @@ const UserSchema: Schema = new Schema<IUser>({
   lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
+  otp: {type: String},
+  otpExpires: { type: Date }
 });
 
 const UserModel = mongoose.model<IUser>('User', UserSchema);
-export default UserModel; 
+export default UserModel;

@@ -3,4 +3,6 @@ export interface User {
   lastName: string;
   email: string;
   password: string | undefined;
+  otp: string | undefined;
+  otpExpires: Date | undefined;
 }

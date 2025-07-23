@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import UserModel from '@src/model/auth/userModel';
+import { generateOTP } from '@src/library/otp';
 
 // register
 export const register = async (req: Request, res: Response) => {
@@ -16,9 +17,11 @@ export const register = async (req: Request, res: Response) => {
     }
     
     const hashedPassword = await bcrypt.hash(password, 10);
-    const user = new UserModel({ firstName, lastName, email, password: hashedPassword });
+    const otp = generateOTP();
+    const otpExpiry = new Date(Date.now() + 10 * 60 *1000);
+    const user = new UserModel({ firstName, lastName, email, password: hashedPassword, otp, otpExpiry });
     await user.save();
-    return res.status(201).json({ success: true, message: 'User registered successfully.' });
+    return res.status(201).json({ success: true, message: 'User registered successfully. OTP sent' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error', error });
   }

@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import UserModel from '@src/model/auth/userModel';
 import { generateOTP } from '@src/library/otp';
+import { sendmail } from '@src/library/mail'; 
 
 // register
 export const register = async (req: Request, res: Response) => {
@@ -18,9 +19,16 @@ export const register = async (req: Request, res: Response) => {
     
     const hashedPassword = await bcrypt.hash(password, 10);
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 10 * 60 *1000);
-    const user = new UserModel({ firstName, lastName, email, password: hashedPassword, otp, otpExpiry });
+    const otpExpires = new Date(Date.now() + 10 * 60 *1000);
+    const user = new UserModel({ firstName, lastName, email, password: hashedPassword, otp, otpExpires });
     await user.save();
+
+    await sendmail(
+      email,
+      'Your OTP Code',
+      `Your OTP code is: ${otp}. It will expire in 10 minutes.`,
+    );
+
     return res.status(201).json({ success: true, message: 'User registered successfully. OTP sent' });
   } catch (error) {
     return res.status(500).json({ success: false, message: 'Server error', error });
@@ -62,3 +70,34 @@ export const login = async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Server error', error });
   }
 };
+
+export const verifyOtp = async (req: Request, res: Response) => {
+  const { email, otp } =req.body;
+  if(!email || !otp){
+    return res.status(400).json({success: false, message: 'Email and Otp are required.'})
+  }
+  try {
+    const user = await UserModel.findOne({email});
+    if(!user){
+      return res.status(404).json({success: false, message: 'User not found.'});
+    }
+    if(!user.otp || !user.otpExpires){
+      return res.status(400).json({succes: false, message: 'No OTP set for this user.'})
+    }
+    if(user.otp !== otp){
+      return res.status(400).json({success: false, message: 'Invalid OTP.'});
+    }
+    if(user.otpExpires < new Date()){
+      return res.status(400).json({success: false, message: 'OTP has expired.'});
+    }
+
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    await user.save();
+
+    return res.status(200).json({success: false, message: 'OTP verified successfully.'});
+
+  } catch(error){
+    return res.status(500).json({success: false, message: 'Server error.', error})
+  }
+}

@@ -17,7 +17,11 @@ function validateRequest(schema: ZodSchema, target: RequestPart = 'body') {
         return; // <-- make sure to return here
       }
 
-      req[target] = result.data;
+      if (target === 'body') {
+        req.body = result.data;
+      } else {
+        Object.assign(req[target], result.data);
+      }
       next();
     } catch (err) {
       if(err instanceof ZodError){

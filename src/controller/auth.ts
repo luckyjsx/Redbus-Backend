@@ -95,7 +95,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
     user.otpExpires = undefined;
     await user.save();
 
-    return res.status(200).json({success: false, message: 'OTP verified successfully.'});
+    return res.status(200).json({success: true, message: 'OTP verified successfully.'});
 
   } catch(error){
     return res.status(500).json({success: false, message: 'Server error.', error})

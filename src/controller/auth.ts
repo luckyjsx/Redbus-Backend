@@ -26,7 +26,7 @@ export const register = async (req: Request, res: Response) => {
     await sendmail(
       email,
       'Your OTP Code',
-      `Your OTP code is: ${otp}. It will expire in 10 minutes.`,
+      otp,
     );
 
     return res.status(201).json({ success: true, message: 'User registered successfully. OTP sent' });

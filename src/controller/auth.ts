@@ -3,7 +3,8 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import UserModel from '@src/model/auth/userModel';
 import { generateOTP } from '@src/library/otp';
-import { sendmail } from '@src/library/mail'; 
+import { sendmail } from '@src/library/mail';
+import crypto from 'crypto'; 
 
 // register
 export const register = async (req: Request, res: Response) => {
@@ -71,6 +72,7 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// verify OTP
 export const verifyOtp = async (req: Request, res: Response) => {
   const { email, otp } =req.body;
   if(!email || !otp){
@@ -101,3 +103,4 @@ export const verifyOtp = async (req: Request, res: Response) => {
     return res.status(500).json({success: false, message: 'Server error.', error})
   }
 }
+

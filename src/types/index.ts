@@ -5,4 +5,6 @@ export interface User {
   password: string | undefined;
   otp: string | undefined;
   otpExpires: Date | undefined;
+  resetPasswordToken?: string;
+  resetPasswordTokenExpires?: Date;
 }

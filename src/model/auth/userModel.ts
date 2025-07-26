@@ -9,7 +9,9 @@ const UserSchema: Schema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   otp: {type: String},
-  otpExpires: { type: Date }
+  otpExpires: { type: Date },
+  resetPasswordToken: {type: String},
+  resetPasswordTokenExpires: {type: Date}
 });
 
 const UserModel = mongoose.model<IUser>('User', UserSchema);
